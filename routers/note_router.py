@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from seed.database import get_db
-from seed import auth, crud, schemas
+from database import get_db
+import auth, crud, schemas
 
 router = APIRouter()
 

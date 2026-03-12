@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from seed.database import get_db
-from seed import auth, crud, models
+from database import get_db
+import auth, crud, models
 
 router = APIRouter(prefix="/admin")
 

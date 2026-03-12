@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block nav_links %}
+    <a href="/dashboard">← Dashboard</a>
+    <a class="logout" href="/logout">Logout</a>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <div class="page-header">
+        <h1>Admin Dashboard</h1>
+        <p>Manage users and notes</p>
+    </div>
+
+    <!-- Users table -->
+    <div class="card">
+        <h2>All Users ({{ users|length }})</h2>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td class="text-muted">{{ u.id }}</td>
+                        <td>{{ u.username }}</td>
+                        <td>
+                            <span class="badge {% if u.role == 'admin' %}badge-admin{% else %}badge-user{% endif %}">
+                                {{ u.role }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="table-actions">
+                                <form method="post" action="/admin/users/{{ u.id }}/update" style="display:flex; gap:6px; align-items:center;">
+                                    <select name="role">
+                                        <option value="user" {% if u.role == "user" %}selected{% endif %}>user</option>
+                                        <option value="admin" {% if u.role == "admin" %}selected{% endif %}>admin</option>
+                                    </select>
+                                    <button class="btn btn-secondary btn-sm" type="submit">Update</button>
+                                </form>
+                                {% if u.username != admin.username %}
+                                <form method="post" action="/admin/users/{{ u.id }}/delete">
+                                    <button class="btn btn-danger btn-sm" type="submit" onclick="return confirm('Delete user {{ u.username }}?')">Delete</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Notes table -->
+    <div class="card">
+        <h2>All Notes ({{ notes|length }})</h2>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Content</th>
+                        <th>Owner ID</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for n in notes %}
+                    <tr>
+                        <td class="text-muted">{{ n.id }}</td>
+                        <td>{{ n.title }}</td>
+                        <td class="text-muted">{{ n.content[:60] }}{% if n.content|length > 60 %}…{% endif %}</td>
+                        <td class="text-muted">{{ n.owner_id }}</td>
+                        <td>
+                            <form method="post" action="/admin/notes/{{ n.id }}/delete">
+                                <button class="btn btn-danger btn-sm" type="submit" onclick="return confirm('Delete this note?')">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

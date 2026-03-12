@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block nav %}
+<nav>
+    <a class="nav-brand" href="/login">📓 Secure Notes</a>
+    <div class="nav-links"></div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-sm">
+    <div class="card">
+        <div class="auth-logo">Welcome back</div>
+        <div class="auth-subtitle">Sign in to your account</div>
+
+        {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="post">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input id="username" name="username" type="text" placeholder="Enter username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" placeholder="Enter password" required>
+            </div>
+            <div class="mt-16">
+                <button class="btn btn-primary btn-full" type="submit">Sign In</button>
+            </div>
+        </form>
+
+        <div class="auth-footer">
+            Don't have an account? <a href="/register">Register</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

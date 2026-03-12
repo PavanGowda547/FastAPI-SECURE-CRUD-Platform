@@ -22,7 +22,7 @@ pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 def hash_password(password : str):
     return pwd_context.hash(password)
 
-def verify_passowrd(plain : str, hashed : str):
+def verify_password(plain : str, hashed : str):
     return pwd_context.verify(plain, hashed)
 
 def create_access_token(data : dict):

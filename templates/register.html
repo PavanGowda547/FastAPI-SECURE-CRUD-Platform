@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block nav %}
+<nav>
+    <a class="nav-brand" href="/login">📓 Secure Notes</a>
+    <div class="nav-links"></div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-sm">
+    <div class="card">
+        <div class="auth-logo">Create account</div>
+        <div class="auth-subtitle">Start saving your notes securely</div>
+
+        {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="post">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input id="username" name="username" type="text" placeholder="3–20 alphanumeric characters" required minlength="3" maxlength="20">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" placeholder="Minimum 8 characters" required minlength="8">
+            </div>
+            <div class="mt-16">
+                <button class="btn btn-primary btn-full" type="submit">Create Account</button>
+            </div>
+        </form>
+
+        <div class="auth-footer">
+            Already have an account? <a href="/login">Sign in</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

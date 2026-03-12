@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block nav_links %}
+    <span class="text-muted">{{ user.username }}</span>
+    {% if user.role == "admin" %}
+    <span class="badge badge-admin">admin</span>
+    <a href="/admin/dashboard">Admin</a>
+    {% endif %}
+    <a class="logout" href="/logout">Logout</a>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <div class="page-header">
+        <h1>My Notes</h1>
+        <p>All your notes in one place</p>
+    </div>
+
+    <!-- Search -->
+    <form class="search-bar" method="get" action="/dashboard">
+        <input name="q" type="text" placeholder="Search notes by title..." value="{{ query or '' }}">
+        <button class="btn btn-secondary" type="submit">Search</button>
+        {% if query %}
+        <a class="btn btn-secondary" href="/dashboard">Clear</a>
+        {% endif %}
+    </form>
+
+    <!-- Notes list -->
+    {% if notes %}
+    <ul class="note-list">
+        {% for note in notes %}
+        <li class="note-item">
+            <div class="note-body">
+                <div class="note-title">{{ note.title }}</div>
+                <div class="note-content">{{ note.content }}</div>
+            </div>
+            <div class="note-actions">
+                <a class="btn btn-secondary btn-sm" href="/notes/{{ note.id }}/edit">Edit</a>
+                <form method="post" action="/notes/{{ note.id }}/delete">
+                    <button class="btn btn-danger btn-sm" type="submit" onclick="return confirm('Delete this note?')">Delete</button>
+                </form>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-state">
+        {% if query %}
+        No notes found for "<strong>{{ query }}</strong>"
+        {% else %}
+        You have no notes yet. Add one below!
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <hr>
+
+    <!-- Add note -->
+    <div class="card">
+        <h2>Add Note</h2>
+        <form method="post" action="/notes">
+            <div class="form-group">
+                <label for="title">Title</label>
+                <input id="title" name="title" type="text" placeholder="Note title" required maxlength="100">
+            </div>
+            <div class="form-group">
+                <label for="content">Content</label>
+                <textarea id="content" name="content" placeholder="Write your note here..." required maxlength="5000"></textarea>
+            </div>
+            <div class="mt-16">
+                <button class="btn btn-primary" type="submit">Add Note</button>
+            </div>
+        </form>
+    </div>
+
+</div>
+{% endblock %}
