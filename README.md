@@ -1,8 +1,15 @@
 # 📓 Secure Notes
 
-A full-stack **notes application** built with FastAPI, SQLAlchemy, and Jinja2. Supports user authentication with JWT, role-based access control, and a complete admin dashboard.
+A full-stack **notes application** built with FastAPI, SQLAlchemy, and Jinja2. Features JWT authentication, role-based access control, a complete admin dashboard, and PostgreSQL support for production deployment.
 
 ![App Preview](images/dashboard.png)
+
+---
+
+## 🚀 Live Demo
+
+> Add your Render deployment URL here once deployed.  
+> Example: `https://secure-notes.onrender.com`
 
 ---
 
@@ -10,12 +17,13 @@ A full-stack **notes application** built with FastAPI, SQLAlchemy, and Jinja2. S
 
 - 🔐 **JWT Authentication** — secure login with HTTP-only cookies
 - 🔑 **Argon2 Password Hashing** — industry-standard password security
-- 👤 **Role-Based Access** — separate user and admin roles
+- 👤 **Role-Based Access Control** — separate user and admin roles
 - 📝 **Full Note Management** — create, edit, search, and delete notes
 - 🛡️ **Admin Dashboard** — manage all users and notes from a UI
 - ✅ **Input Validation** — reusable `Annotated` types with Pydantic v2
 - 🎨 **Clean UI** — simple, responsive design with a single CSS file
-- 🔒 **Environment-based secrets** — no hardcoded credentials
+- 🔒 **Environment-based Secrets** — no hardcoded credentials
+- 🐘 **PostgreSQL Ready** — supports both SQLite locally and PostgreSQL in production
 
 ---
 
@@ -41,7 +49,7 @@ A full-stack **notes application** built with FastAPI, SQLAlchemy, and Jinja2. S
 secure_notes/
 │
 ├── main.py               # App entry point
-├── database.py           # SQLAlchemy engine and session
+├── database.py           # SQLAlchemy engine and session (SQLite + PostgreSQL)
 ├── models.py             # Database models (User, Note)
 ├── schemas.py            # Pydantic schemas
 ├── field_types.py        # Reusable Annotated validation types
@@ -72,7 +80,7 @@ secure_notes/
 
 ---
 
-## ⚙️ Getting Started
+## ⚙️ Local Setup
 
 ### Prerequisites
 
@@ -107,13 +115,13 @@ SECRET_KEY=your-very-long-random-secret-key-here
 ADMIN_PASSWORD=your-secure-admin-password
 ```
 
+> For local development, SQLite is used by default — no database setup needed.
+
 Generate a strong secret key with:
 
 ```bash
 python -c "import secrets; print(secrets.token_hex(32))"
 ```
-
-> ⚠️ Never commit your `.env` file to Git. It is already covered by `.gitignore`.
 
 ### 5. Run the app
 
@@ -125,13 +133,53 @@ Open: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
 ---
 
+## 🐘 PostgreSQL Setup (Production)
+
+This project supports PostgreSQL for production. The database layer automatically switches between SQLite and PostgreSQL based on the `DATABASE_URL` environment variable — no code changes needed.
+
+### How it works
+
+```python
+# Falls back to SQLite if DATABASE_URL is not set
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./secure_notes.db")
+
+# Fixes Render's postgres:// prefix to postgresql://
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+# Uses SSL for PostgreSQL, no SSL needed for SQLite
+if DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+else:
+    engine = create_engine(DATABASE_URL, connect_args={"sslmode": "require"})
+```
+
+### Setting up a free PostgreSQL database on Render
+
+1. Go to [render.com](https://render.com) and log in with GitHub
+2. Click **New → PostgreSQL**
+3. Enter your project name, select the nearest region, choose the **Free plan**
+4. Click **Create Database**
+5. Copy the **External Database URL** from the Render dashboard
+6. Add it to your `.env`:
+
+```env
+SECRET_KEY=your-secret-key-here
+ADMIN_PASSWORD=your-admin-password-here
+DATABASE_URL=postgresql://user:password@host/dbname
+```
+
+> The app uses PostgreSQL when `DATABASE_URL` is present, and falls back to SQLite when it is not. This makes local development easy with no extra setup.
+
+---
+
 ## 🔑 Default Admin Account
 
-On first run, an admin account is automatically created using the credentials from your `.env` file.
+On first run, an admin account is automatically created using the credentials in your `.env` file.
 
 ```
-username: admin
-password: (value of ADMIN_PASSWORD in your .env)
+username : admin
+password : (value of ADMIN_PASSWORD in your .env)
 ```
 
 > ⚠️ Always set a strong `ADMIN_PASSWORD` in your `.env` before running.
@@ -168,49 +216,55 @@ password: (value of ADMIN_PASSWORD in your .env)
 |---|---|
 | [FastAPI](https://fastapi.tiangolo.com/) | Web framework |
 | [SQLAlchemy](https://www.sqlalchemy.org/) | ORM / database layer |
-| SQLite | Database (local/dev) |
+| SQLite / PostgreSQL | Database (local / production) |
 | [Pydantic v2](https://docs.pydantic.dev/) | Data validation |
 | [python-jose](https://github.com/mpdavis/python-jose) | JWT token handling |
 | [passlib + argon2](https://passlib.readthedocs.io/) | Password hashing |
 | [Jinja2](https://jinja.palletsprojects.com/) | HTML templates |
 | [python-dotenv](https://pypi.org/project/python-dotenv/) | Environment variables |
+| [psycopg2-binary](https://pypi.org/project/psycopg2-binary/) | PostgreSQL driver |
+| [Render](https://render.com/) | Cloud deployment and database hosting |
 
 ---
 
 ## ✅ Validation
 
-Validation is handled using reusable `Annotated` types defined in `field_types.py`:
+Validation uses reusable `Annotated` types defined centrally in `field_types.py`. This means rules are defined once and automatically applied across all schemas and routes:
 
 ```python
-Username = Annotated[str, Field(min_length=3, max_length=20, pattern=r"^[a-zA-Z0-9_]+$")]
-Password = Annotated[str, Field(min_length=8, max_length=100)]
-NoteTitle = Annotated[str, Field(min_length=1, max_length=100)]
+Username    = Annotated[str, Field(min_length=3,  max_length=20,  pattern=r"^[a-zA-Z0-9_]+$")]
+Password    = Annotated[str, Field(min_length=8,  max_length=100)]
+NoteTitle   = Annotated[str, Field(min_length=1,  max_length=100)]
 NoteContent = Annotated[str, Field(max_length=5000)]
 ```
-
-These types are shared across schemas and routes — change the rule once and it applies everywhere.
 
 ---
 
 ## ⚠️ Known Limitations
 
-This is a beginner/learning project. Before production use:
+This is a learning/beginner project. Before serious production use consider:
 
-- Replace SQLite with PostgreSQL or MySQL
-- Set `secure=True` on cookies (requires HTTPS)
-- Add CSRF protection
-- Add pagination for large datasets
-- Pin dependency versions in `requirements.txt`
+- Adding CSRF protection on forms
+- Setting `secure=True` on cookies (requires HTTPS)
+- Adding pagination for large datasets
+- Encrypting note content at rest
+- Pinning dependency versions in `requirements.txt`
 
 ---
 
-## 📚 What You Can Learn From This Project
+## 📚 Concepts Covered
 
-- FastAPI project structure with routers
+This project demonstrates the following backend development concepts:
+
+- FastAPI project structure with modular routers
 - JWT authentication with HTTP-only cookies
-- SQLAlchemy ORM with relationships and cascades
-- Role-based access control
-- Pydantic v2 validation with `Annotated` types
+- SQLAlchemy ORM with table relationships and cascades
+- Role-based access control (RBAC)
+- Pydantic v2 validation with reusable `Annotated` types
 - Jinja2 templating with template inheritance
 - Dependency injection in FastAPI
 - Managing secrets with `.env` files
+- Dual database support — SQLite for development, PostgreSQL for production
+- Cloud database setup and connection using Render
+
+---
