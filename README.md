@@ -6,13 +6,6 @@ A full-stack **notes application** built with FastAPI, SQLAlchemy, and Jinja2. F
 
 ---
 
-## 🚀 Live Demo
-
-> Add your Render deployment URL here once deployed.  
-> Example: `https://secure-notes.onrender.com`
-
----
-
 ## ✨ Features
 
 - 🔐 **JWT Authentication** — secure login with HTTP-only cookies
